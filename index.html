@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lukášův narozeninový quest</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="confetti-layer" id="confetti-layer"></div>
+
+<main id="app">
+
+  <!-- LOGIN -->
+  <section id="screen-login" class="screen">
+    <h1>🔒 VSTUP ZAKÁZÁN NEPOVOLANÝM</h1>
+    <p class="flavor">Tohle je přísně tajná operace. Než se dostaneš dál, musíš se přihlásit správným heslem, Luky.</p>
+    <p class="flavor">Heslo znáš. Určitě. (ne)</p>
+    <form id="login-form" autocomplete="off">
+      <input type="text" id="login-input" placeholder="Zadej heslo..." autocomplete="off" spellcheck="false">
+      <button type="submit">Přihlásit se</button>
+    </form>
+    <p id="login-error" class="error" hidden></p>
+    <div id="login-hint" class="hint-box" hidden>
+      <p><strong>Jsi naprosto neschopný.</strong> Třikrát špatně. Dobře, dobře, tady máš opravdové heslo — okopíruj ho a vlož ho nahoru, protože sám bys na něj nepřišel ani za sto let:</p>
+      <code id="real-password"></code>
+      <button id="copy-password" type="button">📋 Zkopírovat</button>
+      <span id="copy-confirm" class="copy-confirm" hidden>Zkopírováno!</span>
+    </div>
+  </section>
+
+  <!-- TASK 1: ranní probouzení -->
+  <section id="screen-task-1" class="screen">
+    <h1>Level 1: Probouzení bestie</h1>
+    <p class="flavor">Než tě kdokoliv osloví, ujasněme si základní fakta o ránech u Lukáše. Posuň obě páčky na maximum. Nikdo na tebe nesmí promluvit, dokud to neuděláš.</p>
+
+    <div class="slider-block">
+      <label for="slider-hours">Kolik hodin musíš proležet v posteli, než jsi schopný člověk?</label>
+      <input type="range" id="slider-hours" min="0" max="10" value="0">
+      <div class="slider-value" id="slider-hours-value">0 hodin</div>
+    </div>
+
+    <div class="slider-block">
+      <label for="slider-protivnost">Jak protivný jsi ráno na škále 1–10?</label>
+      <input type="range" id="slider-protivnost" min="1" max="10" value="1">
+      <div class="slider-value" id="slider-protivnost-value">1</div>
+    </div>
+
+    <p id="task1-msg" class="hint">Ještě víc. Ticho. Nikdo nic neříká.</p>
+    <button id="task1-continue" disabled>Pokračovat</button>
+  </section>
+
+  <!-- TASK 2: útěk z učňáku -->
+  <section id="screen-task-2" class="screen">
+    <h1>Level 2: Útěk z učňáku</h1>
+    <p class="flavor">Docházka na hraně, další absence a je s tebou konec. Uteč škole i učitelům domů — a nezapomeň cestou sebrat počítač, bez něj to doma nemá cenu.</p>
+    <p class="flavor small">Ovládání: šipky / WASD, nebo tlačítka pod bludištěm.</p>
+    <div id="maze-status" class="hint">💻 Počítač: ne | Cíl: domov 🏠</div>
+    <div id="maze-grid" class="maze-grid"></div>
+    <div class="dpad">
+      <div></div><button data-dir="up">▲</button><div></div>
+      <button data-dir="left">◀</button><div></div><button data-dir="right">▶</button>
+      <div></div><button data-dir="down">▼</button><div></div>
+    </div>
+    <p id="task2-msg" class="hint"></p>
+    <button id="task2-continue" hidden>Pokračovat</button>
+  </section>
+
+  <!-- TASK 3: turek -->
+  <section id="screen-task-3" class="screen">
+    <h1>Level 3: Ranní směna</h1>
+    <p class="flavor">Zákazník chce turka do skla. Klikej na kroky ve správném pořadí, ať ti to zase nevrátí.</p>
+    <div id="turek-steps" class="chip-list"></div>
+    <p id="task3-msg" class="hint"></p>
+    <button id="task3-continue" hidden>Pokračovat</button>
+  </section>
+
+  <!-- TASK 4: bábovka -->
+  <section id="screen-task-4" class="screen">
+    <h1>Level 4: Babiččin recept</h1>
+    <p class="flavor">Babička poslala recept na bábovku. Přečti si první písmena každého řádku a napiš, co ti to říká.</p>
+    <div class="recipe-box" id="recipe-box"></div>
+    <form id="task4-form" autocomplete="off">
+      <input type="text" id="task4-input" placeholder="Vytvořené slovo..." autocomplete="off" spellcheck="false">
+      <button type="submit">Odpovědět</button>
+    </form>
+    <p id="task4-msg" class="hint"></p>
+    <button id="task4-continue" hidden>Pokračovat</button>
+  </section>
+
+  <!-- TASK 5: minecraft crafting -->
+  <section id="screen-task-5" class="screen">
+    <h1>Level 5: Craftni si to</h1>
+    <p class="flavor">Než ti dojde diamantový krumpáč, radši ho vyrob pořádně. Vyber položku z palety a klikni na políčko v mřížce.</p>
+    <div class="palette" id="craft-palette"></div>
+    <div class="craft-grid" id="craft-grid"></div>
+    <div class="craft-actions">
+      <button id="craft-check" type="button">Zkontrolovat</button>
+      <button id="craft-reset" type="button">Vyčistit</button>
+    </div>
+    <p id="task5-msg" class="hint"></p>
+    <button id="task5-continue" hidden>Pokračovat</button>
+  </section>
+
+  <!-- TASK 6: subnautica -->
+  <section id="screen-task-6" class="screen">
+    <h1>Level 6: Safe Shallows</h1>
+    <p class="flavor">Jsi na neznámé planetě pokryté vodou. Vyber si jen to, co tě fakt udrží naživu.</p>
+    <div class="checklist" id="subnautica-list"></div>
+    <p id="task6-msg" class="hint"></p>
+    <button id="task6-submit" type="button">Vyrazit na hladinu</button>
+    <button id="task6-continue" hidden>Pokračovat</button>
+  </section>
+
+  <!-- TASK 7: metal -->
+  <section id="screen-task-7" class="screen">
+    <h1>Level 7: Co to sakra posloucháš</h1>
+    <p class="flavor">Poslední dobou z tvýho bluetooth reproduktoru padá už jen tohle. Pozpátku, ale poznáš to.</p>
+    <p class="reversed-word" id="reversed-word"></p>
+    <form id="task7-form" autocomplete="off">
+      <input type="text" id="task7-input" placeholder="Název kapely..." autocomplete="off" spellcheck="false">
+      <button type="submit">Odpovědět</button>
+    </form>
+    <p id="task7-msg" class="hint"></p>
+    <button id="task7-continue" hidden>Pokračovat</button>
+  </section>
+
+  <!-- TASK 8: modrá bunda -->
+  <section id="screen-task-8" class="screen">
+    <h1>Level 8: Rodinná hádka</h1>
+    <p class="flavor small">Poslední zkouška. Odpovídej, jak umíš — stejně si nikdy nerozumíme.</p>
+    <p class="jacket-question" id="jacket-question"></p>
+    <div class="jacket-options" id="jacket-options"></div>
+    <p id="task8-progress" class="hint"></p>
+  </section>
+
+  <!-- FINALE -->
+  <section id="screen-finale" class="screen">
+    <h1>🎉 PŘEŽIL JSI 🎉</h1>
+    <p class="flavor">Osm levelů, jedno naprosto zbytečné heslo a jedna rodinná hádka o bundě později... zasloužíš si dárek.</p>
+    <div id="gift-wrapped">
+      <button id="unwrap-btn">🎁 Rozbalit dárek</button>
+    </div>
+    <div id="gift-revealed" hidden>
+      <p class="gift-reveal">♟️ ŠACHY! ♟️</p>
+      <p class="flavor">Jo, přesně ty, co jsem ti sliboval už loni a pak jsem na to úplně zapomněl. Aspoň víš, že to nebyla výmluva, jen jsem prokrastinoval o rok déle než ty tu docházku.</p>
+      <p class="flavor">Všechno nejlepší k 19., Luky. 14. 9.</p>
+    </div>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

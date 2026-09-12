@@ -1,0 +1,270 @@
+:root {
+  --bg: #14121f;
+  --bg2: #1e1b2e;
+  --fg: #f1eefc;
+  --accent: #ff5fa2;
+  --accent2: #5fe3ff;
+  --accent3: #ffd25f;
+  --danger: #ff5f5f;
+  --ok: #6dffb0;
+  --border: #3a3653;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, var(--bg2), var(--bg) 70%);
+  color: var(--fg);
+  font-family: "Comic Sans MS", "Comic Neue", "Segoe UI", sans-serif;
+  padding: 24px 16px 60px;
+  line-height: 1.5;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.6rem;
+  color: var(--accent3);
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+  margin-top: 0;
+}
+
+.flavor {
+  color: #d8d3f0;
+  font-size: 1rem;
+}
+.flavor.small { font-size: 0.85rem; opacity: 0.8; }
+
+.hint {
+  color: var(--accent2);
+  font-weight: bold;
+  min-height: 1.4em;
+}
+
+.error {
+  color: var(--danger);
+  font-weight: bold;
+}
+
+.screen {
+  display: none;
+  background: rgba(255,255,255,0.03);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 20px;
+  animation: fadein 0.4s ease;
+}
+.screen.active { display: block; }
+
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+button {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: #1a1626;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: transform 0.1s ease, opacity 0.2s ease;
+}
+button:hover:not(:disabled) { transform: translateY(-2px); }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+input[type="text"] {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: #100e1a;
+  color: var(--fg);
+  width: 100%;
+  max-width: 300px;
+}
+
+form { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+
+.hint-box {
+  margin-top: 18px;
+  background: rgba(255,95,95,0.1);
+  border: 2px dashed var(--danger);
+  border-radius: 12px;
+  padding: 16px;
+}
+.hint-box code {
+  display: block;
+  word-break: break-all;
+  background: #100e1a;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 10px 0;
+  color: var(--accent3);
+  font-size: 0.85rem;
+}
+.copy-confirm { color: var(--ok); font-weight: bold; margin-left: 8px; }
+
+/* sliders */
+.slider-block { margin: 18px 0; }
+.slider-block label { display: block; margin-bottom: 6px; font-weight: bold; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.slider-value { text-align: right; color: var(--accent2); font-weight: bold; }
+
+/* maze */
+.maze-grid {
+  display: grid;
+  gap: 2px;
+  margin: 16px auto;
+  width: fit-content;
+  background: #100e1a;
+  padding: 6px;
+  border-radius: 10px;
+}
+.maze-cell {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  border-radius: 4px;
+}
+.maze-wall { background: #2a273f; }
+.maze-floor { background: #1a1730; }
+
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 46px);
+  grid-template-rows: repeat(3, 46px);
+  gap: 6px;
+  margin: 14px auto;
+  width: fit-content;
+}
+.dpad button { margin: 0; padding: 0; }
+
+/* chips (turek steps) */
+.chip-list { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+.chip {
+  background: #241f3a;
+  border: 2px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  user-select: none;
+}
+.chip.used { opacity: 0.3; cursor: default; }
+.chip.picked { border-color: var(--ok); color: var(--ok); }
+
+/* recipe */
+.recipe-box {
+  background: #100e1a;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  font-family: Georgia, serif;
+}
+.recipe-box p { margin: 6px 0; }
+.recipe-box .letter { color: var(--accent3); font-weight: bold; text-decoration: underline; }
+
+/* crafting grid */
+.palette { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.palette button {
+  background: #241f3a;
+  border: 2px solid var(--border);
+  font-size: 1.3rem;
+  padding: 8px 10px;
+}
+.palette button.selected { border-color: var(--accent3); }
+.craft-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 54px);
+  grid-template-rows: repeat(3, 54px);
+  gap: 4px;
+  margin: 10px auto;
+  width: fit-content;
+}
+.craft-cell {
+  background: #100e1a;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+.craft-actions { display: flex; gap: 10px; }
+
+/* checklist */
+.checklist { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+.checklist label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1a1730;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.checklist input { width: 18px; height: 18px; }
+
+/* metal reversed word */
+.reversed-word {
+  font-size: 2rem;
+  letter-spacing: 4px;
+  text-align: center;
+  color: var(--accent3);
+  margin: 20px 0;
+}
+
+/* jacket riddle */
+.jacket-question { font-size: 1.15rem; font-weight: bold; margin: 16px 0; }
+.jacket-options { display: flex; flex-direction: column; gap: 10px; }
+.jacket-options button { width: 100%; text-align: left; background: #241f3a; color: var(--fg); border: 2px solid var(--border); }
+.jacket-options button:hover { border-color: var(--accent); }
+
+/* finale */
+#gift-wrapped { text-align: center; margin-top: 24px; }
+#unwrap-btn { font-size: 1.3rem; padding: 16px 28px; }
+.gift-reveal {
+  font-size: 2.2rem;
+  text-align: center;
+  color: var(--accent3);
+  text-shadow: 0 0 12px rgba(255,210,95,0.6);
+}
+
+/* confetti */
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 999;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 10px;
+  height: 14px;
+  opacity: 0.9;
+  animation: fall linear forwards;
+}
+@keyframes fall {
+  to { transform: translateY(110vh) rotate(360deg); }
+}
+
+@media (max-width: 420px) {
+  h1 { font-size: 1.3rem; }
+  .maze-cell { width: 28px; height: 28px; font-size: 0.9rem; }
+}
