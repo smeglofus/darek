@@ -126,18 +126,23 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   display: grid;
   gap: 2px;
   margin: 16px auto;
-  width: fit-content;
+  /* Bludiště je 13 sloupců široké — pevná šířka buňky by na mobilu přetekla,
+     tak se mřížka roztahuje a buňky si drží čtverec přes aspect-ratio. */
+  width: 100%;
+  max-width: 480px;
+  box-sizing: border-box;
   background: #100e1a;
   padding: 6px;
   border-radius: 10px;
 }
 .maze-cell {
-  width: 34px;
-  height: 34px;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: clamp(0.62rem, 2.6vw, 1.1rem);
+  line-height: 1;
   border-radius: 4px;
 }
 .maze-wall { background: #2a273f; }
@@ -220,13 +225,57 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .checklist input { width: 18px; height: 18px; }
 
 /* metal reversed word */
-.reversed-word {
-  font-size: 2rem;
-  letter-spacing: 4px;
+/* level 7: rozvazovani z postele */
+.rope-watch {
   text-align: center;
-  color: var(--accent3);
-  margin: 20px 0;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 12px;
+  margin: 18px 0 12px;
+  border-radius: 10px;
+  background: #1f2b24;
+  color: var(--ok);
+  border: 2px solid transparent;
+  transition: background 0.12s ease, color 0.12s ease;
 }
+.rope-watch.watching {
+  background: #3a1c24;
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.rope-bar {
+  height: 22px;
+  background: #100e1a;
+  border-radius: 11px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+}
+.rope-bar-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent3));
+  transition: width 0.12s ease;
+}
+.rope-percent {
+  text-align: center;
+  margin: 8px 0 4px;
+  color: var(--accent2);
+  font-weight: bold;
+}
+.rope-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+/* Velké plochy — hraje se to hlavně palci na mobilu. */
+.rope-buttons button {
+  margin-top: 0;
+  padding: 22px 8px;
+  font-size: 1.05rem;
+  background: var(--accent2);
+}
+.rope-buttons button:active:not(:disabled) { transform: scale(0.97); }
 
 /* jacket riddle */
 .jacket-question { font-size: 1.15rem; font-weight: bold; margin: 16px 0; }
@@ -266,5 +315,26 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 
 @media (max-width: 420px) {
   h1 { font-size: 1.3rem; }
-  .maze-cell { width: 28px; height: 28px; font-size: 0.9rem; }
 }
+
+/* navigace pod hrou: zpet o level + vynulovani */
+#game-nav {
+  max-width: 640px;
+  margin: 30px auto 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+/* display:flex vyse by jinak prebilo atribut hidden */
+#game-nav[hidden] { display: none; }
+#game-nav button {
+  margin-top: 0;
+  font-size: 0.9rem;
+  padding: 9px 14px;
+  background: #2a2740;
+  color: var(--fg);
+}
+#game-nav button.nav-danger { color: var(--danger); }
