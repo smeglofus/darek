@@ -317,15 +317,13 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   h1 { font-size: 1.3rem; }
 }
 
-/* navigace pod hrou: zpet o level + vynulovani */
+/* navigace pod hrou: zpet o level */
 #game-nav {
   max-width: 640px;
   margin: 30px auto 0;
   padding-top: 16px;
   border-top: 1px solid var(--border);
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
   justify-content: center;
 }
 /* display:flex vyse by jinak prebilo atribut hidden */
@@ -337,4 +335,23 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   background: #2a2740;
   color: var(--fg);
 }
-#game-nav button.nav-danger { color: var(--danger); }
+
+/* nouzove vynulovani: schvalne male a az uplne dole, aby se netrefilo omylem */
+#game-footer {
+  margin-top: 56px;
+  text-align: center;
+}
+#game-footer[hidden] { display: none; }
+#game-footer button {
+  margin-top: 0;
+  background: none;
+  border: none;
+  padding: 6px;
+  font-size: 0.68rem;
+  font-weight: normal;
+  letter-spacing: 0.5px;
+  color: #615d7a;
+  text-decoration: underline;
+  opacity: 0.8;
+}
+#game-footer button:hover:not(:disabled) { transform: none; color: var(--danger); }

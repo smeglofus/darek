@@ -644,7 +644,9 @@ function initContinueButtons() {
 // zavolat svoje init znovu — ta si obsah překreslí a obsluhu přiřadí, ne přidá.
 function resetLevel(n) {
   const cont = $(`#task${n}-continue`);
-  if (cont) cont.hidden = true;
+  // Level 1 svoje tlačítko neskrývá, jen ho zakazuje přes disabled — schovat ho
+  // tady by znamenalo, že se už nikdy nevrátí a level by nešel dohrát.
+  if (cont) cont.hidden = n !== 1;
   const msg = $(`#task${n}-msg`);
   if (msg) msg.textContent = "";
 
@@ -689,7 +691,9 @@ function resetRope() {
 function updateGameNav() {
   const nav = $("#game-nav");
   if (!nav) return;
-  nav.hidden = $("#screen-login").classList.contains("active");
+  const onLogin = $("#screen-login").classList.contains("active");
+  nav.hidden = onLogin;
+  $("#game-footer").hidden = onLogin;
   $("#nav-back").disabled = getProgress() <= 0;
 }
 
