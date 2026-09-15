@@ -5,6 +5,7 @@ const TOTAL_TASKS = 8;
 const LS_AUTHED = "lq_authed";
 const LS_PROGRESS = "lq_progress";
 const LS_FAILS = "lq_fails";
+const LS_MAX = "lq_max";
 
 // ============ POMOCNÉ ============
 function $(sel) { return document.querySelector(sel); }
@@ -31,10 +32,19 @@ function isAuthed() { return localStorage.getItem(LS_AUTHED) === "true"; }
 function getProgress() { return parseInt(localStorage.getItem(LS_PROGRESS) || "0", 10); }
 function setProgress(n) { localStorage.setItem(LS_PROGRESS, String(n)); }
 
+// Nejdál, kam se hráč dostal. Drží se zvlášť od aktuálního postupu, aby šlo
+// couvnout na starší level a zase se vrátit dopředu bez opakovaného řešení.
+// Math.max kvůli rozehraným hrám, které tenhle klíč v localStorage ještě nemají.
+function getMaxProgress() {
+  return Math.max(parseInt(localStorage.getItem(LS_MAX) || "0", 10), getProgress());
+}
+function setMaxProgress(n) { localStorage.setItem(LS_MAX, String(n)); }
+
 function showScreen(id) {
   $all(".screen").forEach(s => s.classList.remove("active"));
   const target = document.getElementById(id);
   if (target) target.classList.add("active");
+  updateGameNav();
 }
 
 function screenForProgress(p) {
@@ -51,7 +61,11 @@ function goToCurrentState() {
 }
 
 function advanceTo(n) {
+  // Strop se uklada vzdy, ne jen pri posunu vpred: u her rozehranych starsi
+  // verzi se dopocitava z postupu, a bez zapisu by pri couvnuti spadl taky.
+  const max = Math.max(getMaxProgress(), n);
   setProgress(n);
+  setMaxProgress(max);
   showScreen(screenForProgress(n));
 }
 
@@ -137,17 +151,28 @@ function initTask1() {
 
 // ============ TASK 2: BLUDIŠTĚ ============
 const MAZE = [
-  [1,1,1,1,1,1,1,1,1],
-  [1,0,0,0,1,0,0,0,1],
-  [1,0,1,0,1,0,1,0,1],
-  [1,0,1,0,0,0,1,0,1],
-  [1,0,1,1,1,0,1,0,1],
-  [1,0,0,0,0,0,0,0,1],
-  [1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,1,0,1,1,1,0,1,0,1],
+  [1,0,0,0,1,0,0,0,1,0,1,0,1],
+  [1,1,1,0,1,1,1,0,1,0,1,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,1,0,1,1,1,1,1,0,1],
+  [1,0,0,0,1,0,0,0,0,0,1,0,1],
+  [1,0,1,0,1,1,1,0,1,0,1,0,1],
+  [1,0,0,0,0,0,0,0,1,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
-const MAZE_START = { r: 1, c: 1 };
-const MAZE_COMPUTER = { r: 3, c: 4 };
-const MAZE_HOME = { r: 1, c: 7 };
+const MAZE_START = { r: 9, c: 1 };
+const MAZE_COMPUTER = { r: 3, c: 6 };
+const MAZE_HOME = { r: 1, c: 11 };
+
+// Hlídky chodí po dlouhých chodbách (řádky 1, 5 a 9) mezi cMin a cMax.
+const TEACHERS = [
+  { r: 9, cMin: 1, cMax: 7,  startC: 7,  startDir: -1, icon: "👨‍🏫" },
+  { r: 5, cMin: 1, cMax: 11, startC: 6,  startDir: 1,  icon: "👩‍🏫" },
+  { r: 1, cMin: 5, cMax: 11, startC: 11, startDir: -1, icon: "🧑‍🏫" },
+];
 
 let mazeState = null;
 
@@ -155,16 +180,21 @@ function resetMazeState() {
   mazeState = {
     player: { ...MAZE_START },
     pcCollected: false,
-    teacher: { r: 5, c: 2 },
-    teacherDir: 1,
+    teachers: TEACHERS.map(t => ({ r: t.r, c: t.startC, dir: t.startDir, icon: t.icon })),
+    caught: 0,
     won: false,
   };
+}
+
+function resetMazeRun() {
+  mazeState.player = { ...MAZE_START };
+  mazeState.teachers = TEACHERS.map(t => ({ r: t.r, c: t.startC, dir: t.startDir, icon: t.icon }));
 }
 
 function initTask2() {
   resetMazeState();
   const grid = $("#maze-grid");
-  grid.style.gridTemplateColumns = `repeat(${MAZE[0].length}, 34px)`;
+  grid.style.gridTemplateColumns = `repeat(${MAZE[0].length}, minmax(0, 1fr))`;
   grid.innerHTML = "";
   for (let r = 0; r < MAZE.length; r++) {
     for (let c = 0; c < MAZE[0].length; c++) {
@@ -202,20 +232,28 @@ function renderMaze() {
       let content = "";
       if (r === MAZE_COMPUTER.r && c === MAZE_COMPUTER.c && !mazeState.pcCollected) content = "💻";
       if (r === MAZE_HOME.r && c === MAZE_HOME.c) content = "🏠";
-      if (mazeState.teacher.r === r && mazeState.teacher.c === c) content = "👨‍🏫";
-      if (mazeState.player.r === r && mazeState.player.c === c) content = "🧑";
-      cell.textContent = content;
+      const t = mazeState.teachers.find(t => t.r === r && t.c === c);
+      if (t) content = t.icon;
+      // Hráč není emoji, ale vyříznutý obličej z fotky — kreslí se přes CSS
+      // jako pozadí buňky, takže tahle buňka žádný text nemá.
+      const isPlayer = mazeState.player.r === r && mazeState.player.c === c;
+      cell.classList.toggle("maze-player", isPlayer);
+      cell.textContent = isPlayer ? "" : content;
     }
   }
-  $("#maze-status").textContent = `💻 Počítač: ${mazeState.pcCollected ? "ano" : "ne"} | Cíl: domov 🏠`;
+  const caught = mazeState.caught > 0 ? ` | Chycen: ${mazeState.caught}×` : "";
+  $("#maze-status").textContent = `💻 Počítač: ${mazeState.pcCollected ? "ano" : "ne"} | Cíl: domov 🏠${caught}`;
 }
 
 function moveMazePlayer(dir) {
   if (mazeState.won) return;
   const delta = { up: [-1, 0], down: [1, 0], left: [0, -1], right: [0, 1] }[dir];
   if (!delta) return;
+
+  const prevPlayer = { ...mazeState.player };
   const nr = mazeState.player.r + delta[0];
   const nc = mazeState.player.c + delta[1];
+  // Náraz do zdi hráče neposune, ale hlídky se pohnou — dá se tím čekat na mezeru.
   if (MAZE[nr] && MAZE[nr][nc] === 0) {
     mazeState.player = { r: nr, c: nc };
   }
@@ -224,19 +262,34 @@ function moveMazePlayer(dir) {
     mazeState.pcCollected = true;
   }
 
-  // pohyb učitele (hlídkuje po chodbě mezi sloupci 2 a 6 na řádku 5)
-  let nt = mazeState.teacher.c + mazeState.teacherDir;
-  if (nt > 6 || nt < 2) {
-    mazeState.teacherDir *= -1;
-    nt = mazeState.teacher.c + mazeState.teacherDir;
-  }
-  mazeState.teacher = { r: 5, c: nt };
+  const prevTeachers = mazeState.teachers.map(t => ({ ...t }));
+  mazeState.teachers.forEach((t, i) => {
+    const cfg = TEACHERS[i];
+    let next = t.c + t.dir;
+    if (next > cfg.cMax || next < cfg.cMin) {
+      t.dir *= -1;
+      next = t.c + t.dir;
+    }
+    t.c = next;
+  });
 
   const msg = $("#task2-msg");
 
-  if (mazeState.player.r === mazeState.teacher.r && mazeState.player.c === mazeState.teacher.c) {
-    mazeState.player = { ...MAZE_START };
-    msg.textContent = "Chytili tě! Zpátky do lavice.";
+  // Chycení: stejné políčko, nebo prohození (minutí se o půl tahu se nepočítá jako únik).
+  const busted = mazeState.teachers.some((t, i) => {
+    const before = prevTeachers[i];
+    const sameCell = t.r === mazeState.player.r && t.c === mazeState.player.c;
+    const swapped = before.r === mazeState.player.r && before.c === mazeState.player.c
+      && t.r === prevPlayer.r && t.c === prevPlayer.c;
+    return sameCell || swapped;
+  });
+
+  if (busted) {
+    mazeState.caught++;
+    resetMazeRun();
+    msg.textContent = mazeState.pcCollected
+      ? "Chytili tě! Zpátky do lavice. Počítač ti aspoň nechali."
+      : "Chytili tě! Zpátky do lavice.";
     renderMaze();
     return;
   }
@@ -423,24 +476,106 @@ function initTask6() {
   };
 }
 
-// ============ TASK 7: METAL ============
-const METAL_ANSWER = "METALLICA";
+// ============ TASK 7: ROZVÁZAT SE Z POSTELE ============
+const ROPE_GAIN = 5;        // povedené střídnutí
+const ROPE_SAME_SIDE = -5;  // dvakrát po sobě stejná strana
+const ROPE_CAUGHT = -12;    // pohyb, když se Patrik dívá
+const ROPE_SAFE_MS = [2600, 4200];
+const ROPE_WATCH_MS = [1300, 2100];
+
+let ropeState = null;
+
+function randMs([lo, hi]) { return lo + Math.random() * (hi - lo); }
 
 function initTask7() {
-  $("#reversed-word").textContent = METAL_ANSWER.split("").reverse().join("");
-  const form = $("#task7-form");
-  const input = $("#task7-input");
+  const startBtn = $("#rope-start");
+  const left = $("#rope-left");
+  const right = $("#rope-right");
+
+  startBtn.addEventListener("click", startRope);
+  left.addEventListener("click", () => ropeTwist("left"));
+  right.addEventListener("click", () => ropeTwist("right"));
+
+  document.addEventListener("keydown", (e) => {
+    if (!$("#screen-task-7").classList.contains("active")) return;
+    const map = { ArrowLeft: "left", ArrowRight: "right", a: "left", d: "right" };
+    const side = map[e.key];
+    if (!side) return;
+    e.preventDefault();
+    if (ropeState && ropeState.won) return;
+    if (!ropeState || !ropeState.running) startRope();
+    else ropeTwist(side);
+  });
+
+  renderRope();
+}
+
+function startRope() {
+  stopRopeTimers();
+  ropeState = { progress: 0, lastSide: null, watching: false, running: true, won: false, timer: null };
+  $("#rope-start").hidden = true;
+  $("#rope-left").disabled = false;
+  $("#rope-right").disabled = false;
+  $("#task7-msg").textContent = "";
+  scheduleRopeWatch();
+  renderRope();
+}
+
+function stopRopeTimers() {
+  if (ropeState && ropeState.timer) clearTimeout(ropeState.timer);
+}
+
+// Patrik střídá "čumí do mobilu" a "dívá se" v náhodných intervalech.
+function scheduleRopeWatch() {
+  if (!ropeState || !ropeState.running) return;
+  const delay = ropeState.watching ? randMs(ROPE_WATCH_MS) : randMs(ROPE_SAFE_MS);
+  ropeState.timer = setTimeout(() => {
+    if (!ropeState || !ropeState.running) return;
+    ropeState.watching = !ropeState.watching;
+    renderRope();
+    scheduleRopeWatch();
+  }, delay);
+}
+
+function ropeTwist(side) {
+  if (!ropeState || !ropeState.running) return;
   const msg = $("#task7-msg");
 
-  form.onsubmit = (e) => {
-    e.preventDefault();
-    if (normalize(input.value) === METAL_ANSWER) {
-      msg.textContent = "Jasně že to poznáš i pozpátku, vždyť to hraješ na plnou hlasitost furt dokola.";
-      $("#task7-continue").hidden = false;
-    } else {
-      msg.textContent = "Zkus to přečíst pozpátku. Fakt to není složité.";
-    }
-  };
+  if (ropeState.watching) {
+    ropeState.progress += ROPE_CAUGHT;
+    ropeState.lastSide = null;
+    msg.textContent = "Vidí tě. Utáhl to a tváří se spokojeně.";
+  } else if (side === ropeState.lastSide) {
+    ropeState.progress += ROPE_SAME_SIDE;
+    msg.textContent = "Musíš střídat. Takhle si to jen utahuješ.";
+  } else {
+    ropeState.progress += ROPE_GAIN;
+    ropeState.lastSide = side;
+    msg.textContent = "";
+  }
+
+  ropeState.progress = Math.max(0, Math.min(100, ropeState.progress));
+
+  if (ropeState.progress >= 100) {
+    ropeState.running = false;
+    ropeState.won = true;
+    stopRopeTimers();
+    $("#rope-left").disabled = true;
+    $("#rope-right").disabled = true;
+    msg.textContent = "Jsi venku. Patrik si toho všimne asi za hodinu.";
+    $("#task7-continue").hidden = false;
+  }
+
+  renderRope();
+}
+
+function renderRope() {
+  const st = ropeState || { progress: 0, watching: false };
+  $("#rope-fill").style.width = st.progress + "%";
+  $("#rope-percent").textContent = `Povoleno: ${st.progress} %`;
+  const watch = $("#rope-watch");
+  watch.textContent = st.watching ? "👀 PATRIK SE DÍVÁ" : "😴 Patrik čumí do mobilu";
+  watch.classList.toggle("watching", !!st.watching);
 }
 
 // ============ TASK 8: MODRÁ BUNDA ============
@@ -509,6 +644,111 @@ function launchConfetti() {
   }
 }
 
+// ============ POKRAČOVACÍ TLAČÍTKA ============
+// Levely 2–7 svoje "Pokračovat" po splnění úkolu jen odkryjí (hidden = false),
+// posun na další level jim musí navěsit tohle.
+function initContinueButtons() {
+  for (let n = 2; n <= 7; n++) {
+    const btn = $(`#task${n}-continue`);
+    if (btn) btn.addEventListener("click", () => advanceTo(n));
+  }
+}
+
+// ============ NAVIGACE: ZPĚT A VYNULOVÁNÍ ============
+// initTask1/2/7 věší listenery přes addEventListener, takže je nejde volat
+// podruhé (zdvojily by se). Ty tři se proto resetují ručně, zbytek snese
+// zavolat svoje init znovu — ta si obsah překreslí a obsluhu přiřadí, ne přidá.
+function resetLevel(n) {
+  const cont = $(`#task${n}-continue`);
+  // Level 1 svoje tlačítko neskrývá, jen ho zakazuje přes disabled — schovat ho
+  // tady by znamenalo, že se už nikdy nevrátí a level by nešel dohrát.
+  if (cont) cont.hidden = n !== 1;
+  const msg = $(`#task${n}-msg`);
+  if (msg) msg.textContent = "";
+
+  switch (n) {
+    case 1: {
+      const hours = $("#slider-hours");
+      const protivnost = $("#slider-protivnost");
+      hours.value = hours.min;
+      protivnost.value = protivnost.min;
+      // vyvolá render() navěšený v initTask1 — srovná popisky i stav tlačítka
+      hours.dispatchEvent(new Event("input"));
+      break;
+    }
+    case 2:
+      resetMazeState();
+      renderMaze();
+      break;
+    case 3: initTask3(); break;
+    case 4:
+      initTask4();
+      $("#task4-input").value = "";
+      break;
+    case 5: initTask5(); break;
+    case 6:
+      initTask6();
+      $("#task6-submit").hidden = false;
+      break;
+    case 7: resetRope(); break;
+    case 8: initTask8(); break;
+  }
+}
+
+function resetRope() {
+  stopRopeTimers();
+  ropeState = null;
+  $("#rope-start").hidden = false;
+  $("#rope-left").disabled = true;
+  $("#rope-right").disabled = true;
+  renderRope();
+}
+
+function updateGameNav() {
+  const nav = $("#game-nav");
+  if (!nav) return;
+  const onLogin = $("#screen-login").classList.contains("active");
+  nav.hidden = onLogin;
+  $("#game-footer").hidden = onLogin;
+  $("#nav-back").disabled = getProgress() <= 0;
+  $("#nav-forward").disabled = getProgress() >= getMaxProgress();
+}
+
+function goBackOneLevel() {
+  const progress = getProgress();
+  if (progress <= 0) return;
+  // Na obrazovce screen-task-(progress+1) je předchozí level číslo `progress`.
+  resetLevel(progress);
+  advanceTo(progress - 1);
+}
+
+function goForwardOneLevel() {
+  const progress = getProgress();
+  if (progress >= getMaxProgress()) return;
+  advanceTo(progress + 1);
+}
+
+function resetGame() {
+  if (!confirm("Vynulovat celou hru? Přijdeš o postup i o přihlášení.")) return;
+  localStorage.removeItem(LS_AUTHED);
+  localStorage.removeItem(LS_PROGRESS);
+  localStorage.removeItem(LS_FAILS);
+  localStorage.removeItem(LS_MAX);
+  for (let n = 1; n <= TOTAL_TASKS; n++) resetLevel(n);
+  $("#login-input").value = "";
+  $("#login-error").hidden = true;
+  $("#login-hint").hidden = true;
+  $("#gift-wrapped").hidden = false;
+  $("#gift-revealed").hidden = true;
+  showScreen("screen-login");
+}
+
+function initGameNav() {
+  $("#nav-back").addEventListener("click", goBackOneLevel);
+  $("#nav-forward").addEventListener("click", goForwardOneLevel);
+  $("#nav-reset").addEventListener("click", resetGame);
+}
+
 // ============ INIT ============
 document.addEventListener("DOMContentLoaded", () => {
   initLogin();
@@ -521,5 +761,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTask7();
   initTask8();
   initFinale();
+  initContinueButtons();
+  initGameNav();
   goToCurrentState();
 });

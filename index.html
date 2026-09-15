@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lukášův narozeninový quest</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 
@@ -113,15 +113,22 @@
     <button id="task6-continue" hidden>Pokračovat</button>
   </section>
 
-  <!-- TASK 7: metal -->
+  <!-- TASK 7: rozvázat se z postele -->
   <section id="screen-task-7" class="screen">
-    <h1>Level 7: Co to sakra posloucháš</h1>
-    <p class="flavor">Poslední dobou z tvýho bluetooth reproduktoru padá už jen tohle. Pozpátku, ale poznáš to.</p>
-    <p class="reversed-word" id="reversed-word"></p>
-    <form id="task7-form" autocomplete="off">
-      <input type="text" id="task7-input" placeholder="Název kapely..." autocomplete="off" spellcheck="false">
-      <button type="submit">Odpovědět</button>
-    </form>
+    <h1>Level 7: Rozvaž se</h1>
+    <p class="flavor">Tvůj starší, moudřejší, chytřejší, krásnější a odvážnější bratr Patrik tě přivázal k posteli, protože jsi ho otravoval. Vykruť se z toho.</p>
+    <p class="flavor small">Střídej obě tlačítka (nebo šipky ◀ ▶). Dvakrát po sobě stejná strana uzel jen utáhne. A když se Patrik dívá, nehýbej se.</p>
+
+    <div class="rope-watch" id="rope-watch">😴 Patrik čumí do mobilu</div>
+    <div class="rope-bar"><div class="rope-bar-fill" id="rope-fill"></div></div>
+    <div class="rope-percent" id="rope-percent">Povoleno: 0 %</div>
+
+    <div class="rope-buttons">
+      <button id="rope-left" type="button" disabled>◀ Kroutit</button>
+      <button id="rope-right" type="button" disabled>Kroutit ▶</button>
+    </div>
+    <button id="rope-start" type="button">Začít se kroutit</button>
+
     <p id="task7-msg" class="hint"></p>
     <button id="task7-continue" hidden>Pokračovat</button>
   </section>
@@ -151,6 +158,15 @@
 
 </main>
 
-<script src="script.js"></script>
+<nav id="game-nav" hidden>
+  <button id="nav-back" type="button">◀ Předchozí level</button>
+  <button id="nav-forward" type="button">Další level ▶</button>
+</nav>
+
+<footer id="game-footer" hidden>
+  <button id="nav-reset" type="button">vynulovat hru</button>
+</footer>
+
+<script src="script.js?v=8"></script>
 </body>
 </html>
