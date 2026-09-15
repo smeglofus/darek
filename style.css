@@ -331,6 +331,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   padding-top: 16px;
   border-top: 1px solid var(--border);
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   justify-content: center;
 }
 /* display:flex vyse by jinak prebilo atribut hidden */

@@ -5,6 +5,7 @@ const TOTAL_TASKS = 8;
 const LS_AUTHED = "lq_authed";
 const LS_PROGRESS = "lq_progress";
 const LS_FAILS = "lq_fails";
+const LS_MAX = "lq_max";
 
 // ============ POMOCNÉ ============
 function $(sel) { return document.querySelector(sel); }
@@ -31,6 +32,14 @@ function isAuthed() { return localStorage.getItem(LS_AUTHED) === "true"; }
 function getProgress() { return parseInt(localStorage.getItem(LS_PROGRESS) || "0", 10); }
 function setProgress(n) { localStorage.setItem(LS_PROGRESS, String(n)); }
 
+// Nejdál, kam se hráč dostal. Drží se zvlášť od aktuálního postupu, aby šlo
+// couvnout na starší level a zase se vrátit dopředu bez opakovaného řešení.
+// Math.max kvůli rozehraným hrám, které tenhle klíč v localStorage ještě nemají.
+function getMaxProgress() {
+  return Math.max(parseInt(localStorage.getItem(LS_MAX) || "0", 10), getProgress());
+}
+function setMaxProgress(n) { localStorage.setItem(LS_MAX, String(n)); }
+
 function showScreen(id) {
   $all(".screen").forEach(s => s.classList.remove("active"));
   const target = document.getElementById(id);
@@ -52,7 +61,11 @@ function goToCurrentState() {
 }
 
 function advanceTo(n) {
+  // Strop se uklada vzdy, ne jen pri posunu vpred: u her rozehranych starsi
+  // verzi se dopocitava z postupu, a bez zapisu by pri couvnuti spadl taky.
+  const max = Math.max(getMaxProgress(), n);
   setProgress(n);
+  setMaxProgress(max);
   showScreen(screenForProgress(n));
 }
 
@@ -698,6 +711,7 @@ function updateGameNav() {
   nav.hidden = onLogin;
   $("#game-footer").hidden = onLogin;
   $("#nav-back").disabled = getProgress() <= 0;
+  $("#nav-forward").disabled = getProgress() >= getMaxProgress();
 }
 
 function goBackOneLevel() {
@@ -708,11 +722,18 @@ function goBackOneLevel() {
   advanceTo(progress - 1);
 }
 
+function goForwardOneLevel() {
+  const progress = getProgress();
+  if (progress >= getMaxProgress()) return;
+  advanceTo(progress + 1);
+}
+
 function resetGame() {
   if (!confirm("Vynulovat celou hru? Přijdeš o postup i o přihlášení.")) return;
   localStorage.removeItem(LS_AUTHED);
   localStorage.removeItem(LS_PROGRESS);
   localStorage.removeItem(LS_FAILS);
+  localStorage.removeItem(LS_MAX);
   for (let n = 1; n <= TOTAL_TASKS; n++) resetLevel(n);
   $("#login-input").value = "";
   $("#login-error").hidden = true;
@@ -724,6 +745,7 @@ function resetGame() {
 
 function initGameNav() {
   $("#nav-back").addEventListener("click", goBackOneLevel);
+  $("#nav-forward").addEventListener("click", goForwardOneLevel);
   $("#nav-reset").addEventListener("click", resetGame);
 }
 
