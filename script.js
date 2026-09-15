@@ -221,8 +221,11 @@ function renderMaze() {
       if (r === MAZE_HOME.r && c === MAZE_HOME.c) content = "🏠";
       const t = mazeState.teachers.find(t => t.r === r && t.c === c);
       if (t) content = t.icon;
-      if (mazeState.player.r === r && mazeState.player.c === c) content = "🧑";
-      cell.textContent = content;
+      // Hráč není emoji, ale vyříznutý obličej z fotky — kreslí se přes CSS
+      // jako pozadí buňky, takže tahle buňka žádný text nemá.
+      const isPlayer = mazeState.player.r === r && mazeState.player.c === c;
+      cell.classList.toggle("maze-player", isPlayer);
+      cell.textContent = isPlayer ? "" : content;
     }
   }
   const caught = mazeState.caught > 0 ? ` | Chycen: ${mazeState.caught}×` : "";

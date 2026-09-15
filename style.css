@@ -147,6 +147,13 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 }
 .maze-wall { background: #2a273f; }
 .maze-floor { background: #1a1730; }
+.maze-cell.maze-player {
+  background-image: url("luky.jpg?v=1");
+  background-size: cover;
+  background-position: center 40%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--accent3);
+}
 
 .dpad {
   display: grid;
