@@ -4,11 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lukášův narozeninový quest</title>
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=18">
 </head>
 <body>
 
 <div class="confetti-layer" id="confetti-layer"></div>
+<div class="toast-layer" id="toast-layer"></div>
+
+<div class="glitch-gate" id="glitch-gate" hidden>
+  <div class="glitch-gate-box">
+    <p id="glitch-question"></p>
+    <button id="glitch-yes" type="button">Ano</button>
+  </div>
+</div>
+
+<div class="cookie-bar" id="cookie-bar" hidden>
+  <p>Tento web používá cookies a taky si o tobě dělá poznámky.</p>
+  <div class="cookie-buttons">
+    <button type="button">Souhlasím</button>
+    <button type="button">Souhlasím</button>
+  </div>
+</div>
 
 <main id="app">
 
@@ -133,26 +149,64 @@
     <button id="task7-continue" hidden>Pokračovat</button>
   </section>
 
-  <!-- TASK 8: modrá bunda -->
+  <!-- TASK 8: Svarta jump -->
   <section id="screen-task-8" class="screen">
-    <h1>Level 8: Rodinná hádka</h1>
-    <p class="flavor small">Poslední zkouška. Odpovídej, jak umíš — stejně si nikdy nerozumíme.</p>
-    <p class="jacket-question" id="jacket-question"></p>
-    <div class="jacket-options" id="jacket-options"></div>
-    <p id="task8-progress" class="hint"></p>
+    <h1>Level 8: Svarta jump</h1>
+    <p class="flavor">Hořice, střecha garáží. Pod tebou parta, co to natáčí, před tebou strom. Tohle je ta chvíle, na kterou tě celý internet pamatuje, jumpere.</p>
+    <p class="flavor small">Klikni jednou pro rozběh, podruhé pro odraz. Zelený pruh je větev. Trefa je jenom jedna.</p>
+
+    <div class="jump-scene">
+      <div class="jump-roof"></div>
+      <div class="jump-tree" id="jump-tree">🌳</div>
+      <div class="jump-guy" id="jump-guy">🧍</div>
+      <div class="jump-ground"></div>
+    </div>
+
+    <div class="jump-meter">
+      <div class="jump-zone" id="jump-zone"></div>
+      <div class="jump-marker" id="jump-marker"></div>
+    </div>
+    <div class="jump-power" id="jump-power">Síla odrazu: 0 %</div>
+
+    <div class="jump-controls">
+      <button id="jump-btn" type="button">Rozběhnout se</button>
+      <button id="jump-sound" class="sound-toggle" type="button" aria-pressed="true">🔊 Hlášky nahlas</button>
+    </div>
+
+    <p id="task8-msg" class="hint"></p>
+    <p id="jump-quote" class="jump-quote"></p>
+    <button id="task8-continue" hidden>Pokračovat</button>
   </section>
 
   <!-- FINALE -->
   <section id="screen-finale" class="screen">
     <h1>🎉 PŘEŽIL JSI 🎉</h1>
-    <p class="flavor">Osm levelů, jedno naprosto zbytečné heslo a jedna rodinná hádka o bundě později... zasloužíš si dárek.</p>
-    <div id="gift-wrapped">
-      <button id="unwrap-btn">🎁 Rozbalit dárek</button>
+    <p class="flavor">Osm levelů, jedno naprosto zbytečné heslo a jeden skok ze střechy později... zasloužíš si dárek.</p>
+
+    <div id="gift-locked">
+      <p class="flavor">Dárek je v truhle. Žádný hlavolam, žádný chyták. Prostě na ni klikni.</p>
+      <button id="chest" class="chest" type="button" aria-label="Otevřít truhlu">
+        <svg viewBox="0 0 140 112" role="img" aria-hidden="true">
+          <defs><filter id="chest-blur" x="-40%" y="-80%" width="180%" height="260%"><feGaussianBlur stdDeviation="7"/></filter></defs>
+          <ellipse class="chest-glow" cx="70" cy="60" rx="40" ry="13" filter="url(#chest-blur)"/>
+          <g class="chest-lid">
+            <path d="M18 62 A52 52 0 0 1 122 62 Z" fill="#8a5a2b" stroke="#4d3016" stroke-width="4"/>
+            <path d="M18 62 A52 52 0 0 1 122 62" fill="none" stroke="#d9a441" stroke-width="5"/>
+            <rect x="62" y="44" width="16" height="18" rx="3" fill="#d9a441" stroke="#4d3016" stroke-width="3"/>
+          </g>
+          <rect x="18" y="62" width="104" height="40" rx="6" fill="#8a5a2b" stroke="#4d3016" stroke-width="4"/>
+          <rect x="18" y="66" width="104" height="8" fill="#d9a441"/>
+          <rect x="62" y="70" width="16" height="20" rx="3" fill="#d9a441" stroke="#4d3016" stroke-width="3"/>
+          <circle cx="70" cy="80" r="3" fill="#4d3016"/>
+        </svg>
+      </button>
+      <p id="chest-msg" class="hint"></p>
     </div>
+
     <div id="gift-revealed" hidden>
       <p class="gift-reveal">♟️ ŠACHY! ♟️</p>
-      <p class="flavor">Jo, přesně ty, co jsem ti sliboval už loni a pak jsem na to úplně zapomněl. Aspoň víš, že to nebyla výmluva, jen jsem prokrastinoval o rok déle než ty tu docházku.</p>
-      <p class="flavor">Všechno nejlepší k 19., Luky. 14. 9.</p>
+      <p class="flavor">A ne, nejsou koupené na poslední chvíli. Ležely pro tebe nachystané už dlouho — jenom jsem na ně dokonale zapomněl. Takže jsem prokrastinoval ještě o kus víc než ty tu docházku.</p>
+      <p class="flavor">Všechno nejlepší k 19., Luky. 18. 9.</p>
     </div>
   </section>
 
@@ -164,9 +218,10 @@
 </nav>
 
 <footer id="game-footer" hidden>
+  <button id="nav-sound" type="button" aria-pressed="true">🔊 zvuky</button>
   <button id="nav-reset" type="button">vynulovat hru</button>
 </footer>
 
-<script src="script.js?v=8"></script>
+<script src="script.js?v=18"></script>
 </body>
 </html>
